@@ -174,6 +174,7 @@ ecosystem.json
 .idea
 .vscode
 ```
+#### SSH 配置
 
 
 ### git 基础操作
@@ -469,6 +470,129 @@ $ git log --oneline
 ee5ae6f delete c
 ```
 
+### git 远程仓库
+
+要参与任何一个 git 项目的协作，必须要了解该如何管理远程仓库。远程仓库是指托管在网络上的项目仓库，同他人协作开发某个项目时，需要管理这些远程仓库，以便推送或拉取数据，分享各自的工作进展。管理远程仓库的工作，包括添加远程库，移除远程库，管理远程库分支，定义是否跟踪这些分支等
+
+
+#### 克隆远程仓库
+
+克隆仓库的命令格式为 `git clone [url]`。比如，要克隆代码仓库 git_learn，可以用下面的命令：
+
+```
+$ git clone git@github.com:littlematch0123/git_learn.git
+```
+这会在当前目录下创建一个名为 `git_learn` 的目录，其中包含一个.git的目录，用于保存下载下来的所有版本记录，然后从中取出最新版本的文件拷贝。如果进入这个新建的 `git_learn` 目录，会看到项目中的所有文件已经在里边了，准备好后续开发和使用。如果希望在克隆的时候，自己定义要新建的项目目录名称，可以在上面的命令末尾指定新的名字
+
+```
+$ git clone git@github.com:littlematch0123/git_learn.git learnGit
+```
+
+#### 查看远程仓库
+
+要查看当前配置有哪些远程仓库，可以用 `git remote` 命令，它会列出每个远程库的简短名字。在克隆完某个项目后，至少可以看到一个名为 `origin` 的远程库，git 默认使用这个名字来标识所克隆的原始仓库
+
+```
+$ git remote
+origin
+```
+也可以加上 -v 选项(v为--verbose的简写，中文意思是冗长的)，显示对应的克隆地址
+
+```
+$ git remote -v
+origin	git@github.com:littlematch0123/git_learn.git (fetch)
+origin	git@github.com:littlematch0123/git_learn.git (push)
+```
+
+#### 添加远程仓库
+
+通常情况下，一个本地 git 仓库对应一个远程仓库；然而，在一些情况下，一个本地仓库需要同时关联多个远程仓库，比如同时将一个项目发布在 github 和 coding上
+
+添加一个新的远程仓库，可以指定一个名字，以便将来引用，运行 `git remote add [shortname] [url]`
+```
+$ git remote add coding git@git.coding.net:ehuo0123/git_learn.git
+$ git remote -v
+coding	git@git.coding.net:ehuo0123/git_learn.git (fetch)
+coding	git@git.coding.net:ehuo0123/git_learn.git (push)
+origin	git@github.com:littlematch0123/git_learn.git (fetch)
+origin	git@github.com:littlematch0123/git_learn.git (push)
+```
+
+#### 抓取和推送数据
+
+现在可以用字符串 coding 指代对应的仓库地址了。比如说，要抓取所有 coding 有的，但本地仓库没有的信息，可以运行 `git fetch coding`
+
+从远程仓库中获得数据，可以执行：
+```
+$ git fetch [remote-name]
+```
+
+
+使用命令 `git push [remote-name] [branch-name]`，来推送数据到远程仓库
+
+```
+$ git push [remote-name] [branch-name]
+```
+
+如果要把本地的 master 分支推送到 origin 服务器上(克隆操作会自动使用默认的master和origin名字)，可以运行下面的命令
+
+```
+$ git push origin master
+```
+
+同理，pull操作也需要指定从哪个远程仓库拉取，`git pull [remote-name] [branch-name]`
+
+
+#### 远程分支删除和重命名
+
+```
+$ git remote rename coding cd # 重命名
+```
+
+```
+$ git remote rm coding # 删除
+```
+
+#### 不区分远程仓库
+
+由于添加了多个远程仓库，在 push 和 pull 时便面临了仓库的选择问题。诚然如此较为严谨，但是在许多情况下，只需要保持远程仓库完全一致，而不需要进行区分，因而这样的区分便显得有些“多余”
+
+先查看当前的 `git remote` 情况
+
+```
+$ git remote -v
+origin	git@github.com:littlematch0123/git_learn.git (fetch)
+origin	git@github.com:littlematch0123/git_learn.git (push)
+```
+
+接下来，不额外添加远程仓库，而是给现有的远程仓库添加额外的URL
+
+使用 `git remote set-url --add <name> <url>`，给已有的远程仓库添加一个远程地址
+
+```
+$ git remote set-url --add origin git@git.coding.net:ehuo0123/git_learn.git
+```
+
+再次查看所关联的远程仓库：
+
+```
+$ git remote -v
+origin	git@github.com:littlematch0123/git_learn.git (fetch)
+origin	git@github.com:littlematch0123/git_learn.git (push)
+origin	git@git.coding.net:ehuo0123/git_learn.git (push)
+```
+
+这样设置后的push 和pull操作与最初的操作完全一致，不需要进行调整
+
+如果不再需要多个仓库，可以使用`git remote set-url --delete <name> <url>`，将其删除
+```
+$ git remote set-url --delete origin git@git.coding.net:ehuo0123/git_learn.git
+```
+
+### git 分支管理
+
+### git 标签管理
+
 ### git 其他操作
 
 #### 删除文件
@@ -569,7 +693,7 @@ $ git reset HEAD a.txt
 $ git checkout -- a.txt
 ```
 
-
+### git 常用命令
 
 ### 注意事项
 
