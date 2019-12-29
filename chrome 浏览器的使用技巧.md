@@ -126,7 +126,7 @@ Command + 9 跳转到最右侧标签页
 Command + Option + I 打开“开发者工具”
 Command + Shift + J 打开“下载内容”页
 Command + Shift + Delete 打开“清除浏览数据”选项
-Command + Shift + C 打开“检查元素”选项
+Command + Shift + C 打开“检查元素”选项
 ```
 
 【网页】
