@@ -591,6 +591,196 @@ $ git remote set-url --delete origin git@git.coding.net:ehuo0123/git_learn.git
 
 ### git 分支管理
 
+几乎每一种版本控制系统都以某种形式支持分支。使用分支意味着可以从开发主线上分离开来，然后在不影响主线的同时继续工作。
+
+git 中的分支，其实本质上仅仅是个指向 commit 对象的可变指针，即一个包含所指对象校验和(40个字符长度SHA-1字串)的文件，所以创建和销毁一个分支就变得非常廉价。说白了，新建一个分支就是向一个文件写入41个字节(外加一个换行符)那么简单，当然也就很快了
+
+git 会使用 master 作为分支的默认名字。在若干次提交后，其实已经有了一个指向最后一次提交对象的 master 分支，它在每次提交的时候都会自动向前移动
+
+![git_branch](https://pic.xiaohuochai.site/blog/git_branch3.png)
+
+#### 创建分支
+
+创建一个新的分支指针。比如新建一个 testing 分支，可以使用 `git branch` 命令
+
+```
+$ git branch testing
+```
+这会在当前 `commit` 对象上新建一个分支指针
+
+
+![git_branch](https://pic.xiaohuochai.site/blog/git_branch4.png)
+
+git 保存着一个名为 HEAD 的特别指针，它是一个指向正在工作中的本地分支的指针(可以将 HEAD 想象为当前分支的别名)。运行 `git branch` 命令，仅仅是建立了一个新的分支，但不会自动切换到这个分支中去，所以在这个例子中，依然还在 `master` 分支里工作
+
+#### 切换分支
+
+要切换到其他分支，可以执行 `git checkout` 命令。现在转换到新建的 `testing` 分支，这样 HEAD 就指向了 `testing` 分支
+
+```
+$ git checkout testing
+```
+
+![git_branch](https://pic.xiaohuochai.site/blog/git_branch6.png)
+
+`git checkout` 使用 `-b`选项，可以新建并切换到该分支，比如 iss53 分支
+
+```
+$ git checkout -b iss53
+```
+
+#### 合并分支
+
+可以使用 `git merge` 命令来实现分支合并。一般地，合并分支有以下三种情况
+
+1、快进(Fast forward)合并
+
+如果当前 master 分支所在的提交对象是要并入的 hotfix 分支的直接上游，git 只需把 master 分支指针直接右移。换句话说，如果顺着一个分支走下去可以到达另一个分支的话，那么 git 在合并两者时，只会简单地把指针右移，因为这种单线的历史分支不存在任何需要解决的分歧，所以这种合并过程可以称为快进(Fast forward)
+
+```
+$ git checkout master
+$ git merge hotfix
+Updating f42c576..3a0874c
+Fast-forward
+ README | 1 -
+ 1 file changed, 1 deletion(-)
+```
+
+2、无冲突合并
+
+如下图所示，issue 53分支要合并回 master 分支中，git 会用两个分支的末端(C4和C5)以及它们的共同祖先(C2)进行一次简单的三方合并计
+
+![git_branch](https://pic.xiaohuochai.site/blog/git_branch16.png)
+
+
+
+```
+$ git checkout master
+$ git merge iss53
+Auto-merging README
+Merge made by the 'recursive' strategy.
+ README | 1 +
+ 1 file changed, 1 insertion(+)
+```
+
+git对三方合并后的结果重新做一个新的快照，并自动创建一个指向它的提交对象(C6)。这个提交对象比较特殊，它有两个祖先(C4和C5)
+
+![git_branch](https://pic.xiaohuochai.site/blog/git_branch17.png)
+
+3、有冲突合并
+
+如果在不同的分支中都修改了同一个文件的同一部分，git 就无法干净地把两者合到一起(逻辑上说，这种问题只能由人来裁决)。如果在解决问题 #53 的过程中修改了 hotfix 中修改的部分，将得到类似下面的结果
+
+```
+$ git merge iss53
+Auto-merging index.html
+CONFLICT (content): Merge conflict in index.html
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+git 作了合并，但没有提交，它会停下来等待解决冲突。要看看哪些文件在合并时发生冲突，可以用 `git status` 查阅
+
+```
+$ git status
+On branch master
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+
+        both modified:      index.html
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+任何包含未解决冲突的文件都会以未合并(unmerged)的状态列出。git会在有冲突的文件里加入标准的冲突解决标记，可以通过它们来手工定位并解决这些冲突。可以看到此文件包含类似下面这样的部分：
+
+```
+<<<<<<< HEAD
+<div id="footer">contact : email.support@github.com</div>
+=======
+<div id="footer">
+  please contact us at support@github.com
+</div>
+>>>>>>> iss53
+```
+在解决了所有文件里的所有冲突后，要运行 `git add` 命令将把它们标记为已解决状态(实际上就是将一次快照保存到暂存区域)。因为一旦暂存，就表示冲突已经解决
+
+再运行一次 `git status` 来确认所有冲突都已解决
+```
+$ git status
+On branch master
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+        modified:   index.html
+```
+
+如果确认所有冲突都已解决，可以用 `git commit`来完成这次合并提交。提交的记录会自动生成
+
+```
+Merge branch 'iss53'
+
+Conflicts:
+  index.html
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please remove the file
+#       .git/MERGE_HEAD
+# and try again.
+#
+```
+
+
+#### 查看分支
+
+`git branch` 命令如果不加任何参数，它会给出当前所有分支的清单。master 分支前的 `*` 字符表示当前所在的分支。也就是说，如果现在提交更新，master 分支将随着开发进度前移
+
+```
+$ git branch
+  iss53
+* master
+  testing
+```
+
+若要查看各个分支最后一个提交对象的信息，运行 `git branch -v`
+
+```
+$ git branch -v
+  iss53   93b412c fix javascript issue
+* master  7a98805 Merge branch 'iss53'
+  testing 782fd34 add scott to the author list in the readmes
+```
+
+#### 删除分支
+
+之前的工作成果已经合并到 master 了，那么 iss53 分支也就没用了。可以使用 `git branch -d` 命令来删除它
+```
+$ git branch -d iss53
+```
+<!-- 现在先提交一次
+
+```
+$ git commit -a -m 'made a change'
+```
+
+然后，回到 master 分支
+
+```
+$ git checkout master
+```
+
+
+在 master 分支上也提交一次
+```
+$ git commit -a -m 'made other changes'
+```
+
+现在项目提交历史产生了分叉
+
+![git_branch](https://pic.xiaohuochai.site/blog/git_branch9.png) -->
+
+
 ### git 标签管理
 
 ### git 其他操作
