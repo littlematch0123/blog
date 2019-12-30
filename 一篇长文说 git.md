@@ -45,6 +45,8 @@
 
 ```
 repository 仓库
+branch 分支
+summary 概要
 track 跟踪
 modify 修改
 stage 暂存
@@ -53,7 +55,10 @@ push 推送
 pull 拉取
 clone 克隆
 amend 修改
+merge 合并
+conflict 冲突
 verbose 冗长的
+reflog 回流
 ```
 【`.git` 目录】
 
@@ -175,6 +180,48 @@ ecosystem.json
 .vscode
 ```
 #### SSH 配置
+
+如果要进行远程操作，即从 github 远程服务器 push 和 pull 代码，需要解决一个问题，就是 github 怎么知道是我在提交我的代码？
+除了每次输入用户名、密码外，更简单的方式是配置 SSH
+
+大多数 git 服务器都会选择使用 SSH 公钥来进行授权。系统中的每个用户都必须提供一个公钥用于授权
+
+　　首先先确认一下是否已经有一个公钥了。SSH公钥默认储存在账户的主目录下的 `~/.ssh` 目录，有.pub后缀的文件就是公钥，另一个文件则是密钥
+
+然后，使用如下命令来生成 SSH key，然后一路回车，使用默认值即可
+```
+$ ssh-keygen -t rsa -b 4096 -C 121631835@qq.com
+```
+如果一切顺利的话，可以在用户主目录里找到 `.ssh` 目录，里面有 `id_rsa` 和 `id_rsa.pub` 两个文件，这两个就是 SSH Key 的秘钥对，`id_rsa` 是私钥，不能泄露出去，`id_rsa.pub` 是公钥，可以放心地告诉任何人
+
+SSH的公钥如下所示：
+```
+$ cat ~/.ssh/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC3ltgCdqTIrPuN6yMYCeSMg8shtM+TRBIULDmfeh/9lE51e2g2t8ytLxz/QrPu3jvvpBqMimyPxC0NyW38eIHP9dkXTS0V76LlXy1MZvIjP3SnaU3AJs/fke61wc9y9EdPfrpSjIZpG7Z134+huaioLhPRShRmUQjl3plC9a89fnCyzTmtix5fDKKFjU3ZU6uVSDPy8+o+vsTfwAPQ1ylaBbY733Y1shmd6Texwmb8ttkv1Xj31RdhTdSS2eI3pSN/Ld1GC6/d2u3zcLnC6T4+1WLd0KTm/lqdzB2uWSsnMBI11wfKdw3pqEI17oGrPxurmunoMPzyR/dHwkfwotwh 121631835@qq.com
+```
+接下来，登陆 gitHub，打开 `Settings` 中的 `SSH Keys` 页面
+
+![github](https://pic.xiaohuochai.site/blog/git_trusteeship6.png)
+
+然后，点 `New SSH Key`，填上任意 Title，在 Key 文本框里粘贴 `id_rsa.pub` 文件的内容
+
+点击 `Add SSH key` 按钮后，即算配置完成了
+
+接下来，使用 `ssh -T git@github.com` 来测试 SSH 是否配置成功
+```
+$ ssh -T git@github.com
+Hi littlematch0123! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+回到这部分最开始的问题，在请求代码时，我怎么知道对方是 github 呢？也需要 github 提供一个公钥给我，所以在第一次连接 github 时要选择 yes 来接受对方的公钥，也就是下面的代码
+```
+$ ssh -T git@github.com
+The authenticity of host 'github.com (13.250.177.223)' can't be established.
+RSA key fingerprint is 16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48.
+Are you sure you want to continue connecting (yes/no)? yes
+warning: Permanently added 'github.com' (rsa) to the list of known hosts
+Hi littlematch0123! You've successfully authenticated, but GitHub does not provide shell access.
+```
 
 
 ### git 基础操作
@@ -382,6 +429,14 @@ M  lib/simplegit.rb # 文件被修改，且放入了暂存区
 ?? LICENSE.txt # 新添加的未跟踪的文件
 ```
 
+一般地，`-s` 选项与`-b`选项同时使用，`s` 代表 summary(概要)，`b` 代表 branch(分支)
+
+```
+$ git status -sb
+## master...origin/master [ahead 1]
+ M "git.md"
+```
+
 #### 状态详览
 
 如果在知道具体哪行发生了改变，要使用 `git diff` 命令
@@ -469,6 +524,64 @@ $ git log --oneline
 3f7b9ed (HEAD -> master) add b
 ee5ae6f delete c
 ```
+
+#### git 命令历史
+
+`git reflog` 命令按照之前经过的所有的 `commit` 路径按序来排列，用来记录每一次命令，常用于版本切换的辅助操作中
+
+```
+$ git reflog
+```
+
+
+### git 版本切换
+
+git 要进行版本切换，就必须知道当前版本是哪个版本。在 git 中，用 `HEAD` 来表示当前版本，也就是最新的提交，上一个版本就是 `HEAD^`，上上一个版本就是 `HEAD^^`，当然往上100个版本写100个^比较容易数不过来，所以写成 `HEAD~100`
+
+先使用 `git log --online` 来简览当前的提交历史
+
+```
+$ git log --oneline
+e7422c8 (HEAD -> master) add b
+ee5ae6f delete c
+8760a0f add c
+```
+
+使用命令 `git reset --hard commit_id` 在版本的历史之间切换
+
+```
+ git reset --hard HEAD^
+HEAD is now at ee5ae6f delete c
+```
+
+再使用 `git log --online` 来简览提交历史，发现最新的那个版本已经看不到了
+
+```
+$ git log --oneline
+ee5ae6f (HEAD -> master) delete c
+8760a0f add c
+```
+
+如果找到最新版本的提交对象呢？ git提供了一个命令 `git reflog`，该命令按照之前经过的所有的 `commit` 路径按序来排列，用来记录每一次命令
+
+```
+$ git reflog
+ee5ae6f (HEAD -> master) HEAD@{0}: reset: moving to HEAD^
+e7422c8 HEAD@{1}: commit (amend): add b
+3f7b9ed HEAD@{2}: commit: add b
+ee5ae6f (HEAD -> master) HEAD@{3}: commit: delete c
+8760a0f HEAD@{4}: commit: add c
+```
+
+从 `git reflog` 命令返回的结果中发现，e7422c8 是最新版本的 commit id
+
+　　下面使用 `git reset --hard` 命令，将文件恢复到最新版本
+
+```
+$ git reset --hard e7422c8
+HEAD is now at e7422c8 add b
+```
+
 
 ### git 远程仓库
 
@@ -716,7 +829,7 @@ Changes to be committed:
         modified:   index.html
 ```
 
-如果确认所有冲突都已解决，可以用 `git commit`来完成这次合并提交。提交的记录会自动生成
+如果确认所有冲突都已解决，可以用 `git commit` 来完成这次合并提交。提交说明会自动生成
 
 ```
 Merge branch 'iss53'
