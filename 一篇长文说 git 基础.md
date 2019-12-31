@@ -1,6 +1,6 @@
 ![git_thumb](https://pic.xiaohuochai.site/blog/git/git_thumb.jpg)
 
-版本管理在产品级开发中是非常重要的一个部分，它涉及到团队协作，且影响到产品最终的发布、上线以及测试环节，当前最流行的版本控制系统是 git。git 内容非常多，本文尽量克制地来介绍 git 的相关内容
+版本管理在产品级开发中是非常重要的一个部分，它涉及到团队协作，且影响到产品最终的发布、上线以及测试环节，当前最流行的版本控制系统是 git。git 内容非常多，本文尽量克制地来介绍 git 的基础内容
 
 ### 概述
 
@@ -191,54 +191,6 @@ ecosystem.json
 .vscode
 ```
 
-#### 别名配置
-
-使用 git 别名配置，可以让 git 体验更简单
-
-可以通过 `git config` 命令g来为命令设置一个别名
-```
-$ git config --global alias.ci commit
-```
-这意味着，当要输入 `git commit` 时，只需要输入 `git ci` 就好了
-
-更简单的方式，是直接编辑 `~/.gitconfig` 文件，可以达到相同的效果
-
-```
-[alias]
-c = commit
-```
-
-但如果只想输入 `gc`，就想实现 `git commit` 相同的效果，则需要使用 linux 的别名功能
-
-新建 `.bashrc` 文件，然后更改其内容
-```
-alias gc="git commit"
-```
-运行该文件即可
-```
-source ~/.bashrc
-```
-一个常见的别名配置如下
-
-```
-alias ga="git add"
-alias gc="git commit"
-alias gac="git add . && git commit -m"
-
-alias gs="git status"
-alias gsb="git status -sb"
-alias gd="git diff"
-alias gg="git log"
-alias glog="git log --graph --oneline --all"
-
-alias gp="git push"
-alias gl="git pull"
-
-alias gb="git branch"
-alias gco="git checkout"
-alias gm="git merge"
-
-```
 
 #### SSH 配置
 
@@ -444,7 +396,7 @@ $ git commit -am '更新 README'
 
 但是，跳过 `git add` 步骤，不等于完全不使用 `git add`。因为 `git commit -a` 是将所有跟踪过的文件暂存起来并提交，只是省略了暂存这一步。但一个未跟踪状态的文件需要使用 `git add` 命令来使其变成已跟踪状态
 
-还有一种提交方式是使用 `-v` 或`--verbose`选项，翻译成中文是冗余的，它不能能回顾刚刚修改的内容，而且会迫使把提交理由写得更详细些
+还有一种提交方式是使用 `-v` 或`--verbose`选项，翻译成中文是冗余的，它不仅能回顾刚刚修改的内容，而且会迫使把提交理由写得更详细些
 ```
 将 README 内容中的 12345 去掉
 # Please enter the commit message for your changes. Lines starting
@@ -784,55 +736,6 @@ Conflicts:
 # and try again.
 #
 ```
-#### 分支变基
-
-把一个分支中的修改整合到另一个分支的办法有两种：merge 和 rebase(rebase的翻译为衍合或变基)
-
-分支变基(rebase)其实就是把在一个分支里提交的改变移到另一个分支里重放一遍
-
-当前有两个分支：master 和 x 分支，两个分支的文件 a 内容分别是 'master' 和 'x'
-```
-$ git log --graph --oneline --all
-* db45879 (HEAD -> master) add master to a
-| * 64da989 (x) add a to a
-|/
-* 04b40da add a
-```
-现在，进行分支变基，将 x 分支提交的改变移动到 master 分支。先切换到 x 分支，然后再 `rebase master`
-```
-$ git checkout x
-$ git rebase master
-First, rewinding head to replay your work on top of it...
-Applying: add a to a
-Using index info to reconstruct a base tree...
-M	a
-Falling back to patching base and 3-way merge...
-Auto-merging a
-CONFLICT (content): Merge conflict in a
-error: Failed to merge in the changes.
-Patch failed at 0001 add a to a
-Use 'git am --show-current-patch' to see the failed patch
-
-Resolve all conflicts manually, mark them as resolved with
-"git add/rm <conflicted_files>", then run "git rebase --continue".
-You can instead skip this commit: run "git rebase --skip".
-To abort and get back to the state before "git rebase", run "git rebase --abort".
-```
-解决冲突后，添加到暂存区，然后提交到本地仓库
-```
-$ git add a
-$ git commit -m 'rebase'
-```
-再次使用 `git log`，结果如下
-```
-$ git log --graph --oneline --all
-* 0e5b749 (HEAD) rebase
-* db45879 (master) add master to a
-| * 64da989 (x) add a to a
-|/
-* 04b40da add a
-```
-
 
 #### 查看分支
 
@@ -860,10 +763,10 @@ $ git branch -v
 ```
 $ git branch -d iss53
 ```
-
-
-
-
+如果一个分支没有被合并过，则该分支需要使用 `-D` 选项来删除
+```
+$ git branch -D iss53
+```
 
 
 ### git 远程仓库与分支
@@ -923,7 +826,6 @@ coding	git@git.coding.net:ehuo0123/git_learn.git (push)
 origin	git@github.com:littlematch0123/git_learn.git (fetch)
 origin	git@github.com:littlematch0123/git_learn.git (push)
 ```
-
 
 
 #### 推送本地分支
@@ -1055,7 +957,6 @@ $ git pull
 
 下面命令表示删除 origin 主机的 x 分支
 
-
 ```
 $ git push origin :x
 # 等同于
@@ -1101,7 +1002,7 @@ origin	git@github.com:littlematch0123/git_learn.git (push)
 origin	git@git.coding.net:ehuo0123/git_learn.git (push)
 ```
 
-这样设置后的push 和pull操作与最初的操作完全一致，不需要进行调整
+这样设置后的 push 和pull 操作与最初的操作完全一致，不需要进行调整
 
 如果不再需要多个仓库，可以使用`git remote set-url --delete <name> <url>`，将其删除
 ```
@@ -1109,8 +1010,6 @@ $ git remote set-url --delete origin git@git.coding.net:ehuo0123/git_learn.git
 ```
 
 
-
-### git 标签管理
 
 ### git 其他操作
 
@@ -1212,8 +1111,6 @@ $ git reset HEAD a.txt
 $ git checkout -- a.txt
 ```
 
-### git 常用命令
-
 ### 注意事项
 
 1、版本控制系统只能跟踪文本文件的改动，比如TXT文件，网页，所有的程序代码等等。图片、视频这些二进制文件，虽然也能由版本控制系统管理，但没法跟踪文件的变化，只能把二进制文件每次改动串起来，也就是只知道图片从100KB改成了120KB，但到底改了啥，版本控制系统不知道，也没法知道
@@ -1248,4 +1145,72 @@ $ git config diff.word.textconv docx2txt
 4、在 git 中任何已提交的东西几乎总是可以恢复的，但任何未提交的东西丢失后很可能再也找不到了
 
 
+### git 常用命令
+
+#### 基础操作
+
+```
+$ git init  #初始化仓库
+$ git add <file> #跟踪新文件，或者把已跟踪的文件放到暂存区
+$ git add .  #批量跟踪所有工作目录下未被跟踪的文件
+$ git rm <file> #从本地仓库中删除文件
+$ git rm -f <file> #从暂存区中删除文件
+$ git rm --cached <file> #从git仓库中删除，但保留在当前工作目录中
+$ git commit  #把文件提交到本地仓库
+$ git commit -m 'wrote a file'  #-m参数后跟提交说明的方式，在一行命令中提交更新
+$ git commit -am 'wrote a file'  #把所有已经跟踪过的文件暂存起来一并提交
+$ git commit -v #启动文本编辑器以便输入本次提交的说明，编辑器会显示与上次提交相比的变更之处
+$ git commit --amend  #修改最后一次提交
+$ git reset HEAD <file>  #取消暂存
+$ git checkout -- <file>  #恢复文件内容
+```
+
+#### 查看操作
+```
+$ git status  #检查当前文件状态
+$ git status -s #更为紧凑的格式的状态输出
+$ git diff  #查看工作目录与暂存区的差异
+$ git diff --cached  #查看暂存区与某次提交的差异，默认为HEAD
+$ git diff id1 id2  #查看两次提交之间的差异
+$ git log  #查看提交历史
+$ git log -p #展开显示每次提交的内容差异
+$ git log -2 #仅显示最近的两次更新
+$ git log --oneline #每个提交放在一行显示
+$ git log --all #显示所有分支的提交记录
+$ git log --graph  #显示 ASCII 图形表示的分支合并历史
+$ git reflog  #按照之前经过的所有的commit路径按序来排列，用来记录每一次命令
+```
+
+#### 分支操作
+
+```
+$ git branch  #列出所有分支，当前分支前面会标一个*号
+$ git branch -v  #查看各分支最后一个提交对象的信息
+$ git branch <branchName>  #新建分支
+$ git branch -d <branchName>  #删除分支
+$ git branch -D <branchName>  #强制删除分支，用于删除没有合并过的分支
+$ git checkout <branchName>   #分支切换
+$ git checkout -b <branchName>  #创建新分支并切换到该分支
+$ git checkout -  #将HEAD移动到上一分支
+$ git merge <branchName>  #将目标分支合并到当前分支
+$ git reset --hard <commit>  #将当前分支回退到历史某个版本，提交的内容会复制到暂存区和工作目录
+```
+
+#### 远程操作
+
+```
+$ git remote   #查看所有的远程仓库
+$ git remote -v  #显示远程仓库对应的克隆地址
+$ git remote add [shortname] [url]  #添加一个新的远程仓库
+$ git remote rename pb paul   #将远程库的名称从pb改为paul
+$ git remote rm [shortname]   #取消对该远程库的关联
+$ git remote set-url --add <name> <url>  #给现有的远程仓库添加额外的URL
+$ git remote set-url --delete <name> <url>  #给现有的远程仓库删除额外的URL
+$ git clone <address>  #克隆远程仓库的所有分支
+$ git push origin <branchName>  #取出在本地的<branchName>分支，推送到远程仓库的<branchName>分支
+$ git fetch origin  #从远程服务器抓取所有分支的数据
+$ git pull origin <branchName>  #相当于fetch和merge命令的合体
+$ git push origin :serverfix  #在服务器上删除serverfix分支
+$ git push origin --delete serverfix  #删除服务顺分支的另外写法
+```
 
