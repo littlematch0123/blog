@@ -684,7 +684,7 @@ CONFLICT (content): Merge conflict in index.html
 Automatic merge failed; fix conflicts and then commit the result.
 ```
 
-git 作了合并，但没有提交，它会停下来等待解决冲突。要看看哪些文件在合并时发生冲突，可以用 `git status` 查阅
+git 进行了合并，但没有提交，它会停下来等待解决冲突。要看看哪些文件在合并时发生冲突，可以用 `git status` 查阅
 
 ```
 $ git status
@@ -1211,6 +1211,6 @@ $ git push origin <branchName>  #取出在本地的<branchName>分支，推送�
 $ git fetch origin  #从远程服务器抓取所有分支的数据
 $ git pull origin <branchName>  #相当于fetch和merge命令的合体
 $ git push origin :serverfix  #在服务器上删除serverfix分支
-$ git push origin --delete serverfix  #删除服务顺分支的另外写法
+$ git push origin --delete serverfix  #在服务器上删除serverfix分支
 ```
 
