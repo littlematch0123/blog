@@ -57,6 +57,9 @@ clone 克隆
 amend 修改
 merge 合并
 conflict 冲突
+origin 起源
+upstream 上游
+downstream 下游
 verbose 冗长的
 reflog 回流
 ```
@@ -113,6 +116,7 @@ git 使用 `SHA-1` 算法计算数据的校验和，通过对文件的内容或�
 
 　　--system【低优先级】：影响到全系统的git仓库，文件为/etc/gitconfig
 ```
+
 #### 基础配置
 
 一般在新的系统上，需要先配置下自己的 git 工作环境。配置工作只需一次，以后升级时还会沿用现在的配置。当然，如果需要随时可以用相同的命令修改已有的配置
@@ -143,6 +147,12 @@ git config --global core.autocrlf input
 ```
 git config --global core.quotepath false
 ```
+
+6、只允许 push 当前分支到远程同名分支上
+```
+git config --global push.default simple
+```
+
 #### 查看配置
 
 ```
@@ -179,6 +189,7 @@ ecosystem.json
 .idea
 .vscode
 ```
+
 #### SSH 配置
 
 如果要进行远程操作，即从 github 远程服务器 push 和 pull 代码，需要解决一个问题，就是 github 怎么知道是我在提交我的代码？
@@ -582,126 +593,6 @@ $ git reset --hard e7422c8
 HEAD is now at e7422c8 add b
 ```
 
-
-### git 远程仓库
-
-要参与任何一个 git 项目的协作，必须要了解该如何管理远程仓库。远程仓库是指托管在网络上的项目仓库，同他人协作开发某个项目时，需要管理这些远程仓库，以便推送或拉取数据，分享各自的工作进展。管理远程仓库的工作，包括添加远程库，移除远程库，管理远程库分支，定义是否跟踪这些分支等
-
-
-#### 克隆远程仓库
-
-克隆仓库的命令格式为 `git clone [url]`。比如，要克隆代码仓库 git_learn，可以用下面的命令：
-
-```
-$ git clone git@github.com:littlematch0123/git_learn.git
-```
-这会在当前目录下创建一个名为 `git_learn` 的目录，其中包含一个.git的目录，用于保存下载下来的所有版本记录，然后从中取出最新版本的文件拷贝。如果进入这个新建的 `git_learn` 目录，会看到项目中的所有文件已经在里边了，准备好后续开发和使用。如果希望在克隆的时候，自己定义要新建的项目目录名称，可以在上面的命令末尾指定新的名字
-
-```
-$ git clone git@github.com:littlematch0123/git_learn.git learnGit
-```
-
-#### 查看远程仓库
-
-要查看当前配置有哪些远程仓库，可以用 `git remote` 命令，它会列出每个远程库的简短名字。在克隆完某个项目后，至少可以看到一个名为 `origin` 的远程库，git 默认使用这个名字来标识所克隆的原始仓库
-
-```
-$ git remote
-origin
-```
-也可以加上 -v 选项(v为--verbose的简写，中文意思是冗长的)，显示对应的克隆地址
-
-```
-$ git remote -v
-origin	git@github.com:littlematch0123/git_learn.git (fetch)
-origin	git@github.com:littlematch0123/git_learn.git (push)
-```
-
-#### 添加远程仓库
-
-通常情况下，一个本地 git 仓库对应一个远程仓库；然而，在一些情况下，一个本地仓库需要同时关联多个远程仓库，比如同时将一个项目发布在 github 和 coding上
-
-添加一个新的远程仓库，可以指定一个名字，以便将来引用，运行 `git remote add [shortname] [url]`
-```
-$ git remote add coding git@git.coding.net:ehuo0123/git_learn.git
-$ git remote -v
-coding	git@git.coding.net:ehuo0123/git_learn.git (fetch)
-coding	git@git.coding.net:ehuo0123/git_learn.git (push)
-origin	git@github.com:littlematch0123/git_learn.git (fetch)
-origin	git@github.com:littlematch0123/git_learn.git (push)
-```
-
-#### 抓取和推送数据
-
-现在可以用字符串 coding 指代对应的仓库地址了。比如说，要抓取所有 coding 有的，但本地仓库没有的信息，可以运行 `git fetch coding`
-
-从远程仓库中获得数据，可以执行：
-```
-$ git fetch [remote-name]
-```
-
-
-使用命令 `git push [remote-name] [branch-name]`，来推送数据到远程仓库
-
-```
-$ git push [remote-name] [branch-name]
-```
-
-如果要把本地的 master 分支推送到 origin 服务器上(克隆操作会自动使用默认的master和origin名字)，可以运行下面的命令
-
-```
-$ git push origin master
-```
-
-同理，pull操作也需要指定从哪个远程仓库拉取，`git pull [remote-name] [branch-name]`
-
-
-#### 远程分支删除和重命名
-
-```
-$ git remote rename coding cd # 重命名
-```
-
-```
-$ git remote rm coding # 删除
-```
-
-#### 不区分远程仓库
-
-由于添加了多个远程仓库，在 push 和 pull 时便面临了仓库的选择问题。诚然如此较为严谨，但是在许多情况下，只需要保持远程仓库完全一致，而不需要进行区分，因而这样的区分便显得有些“多余”
-
-先查看当前的 `git remote` 情况
-
-```
-$ git remote -v
-origin	git@github.com:littlematch0123/git_learn.git (fetch)
-origin	git@github.com:littlematch0123/git_learn.git (push)
-```
-
-接下来，不额外添加远程仓库，而是给现有的远程仓库添加额外的URL
-
-使用 `git remote set-url --add <name> <url>`，给已有的远程仓库添加一个远程地址
-
-```
-$ git remote set-url --add origin git@git.coding.net:ehuo0123/git_learn.git
-```
-
-再次查看所关联的远程仓库：
-
-```
-$ git remote -v
-origin	git@github.com:littlematch0123/git_learn.git (fetch)
-origin	git@github.com:littlematch0123/git_learn.git (push)
-origin	git@git.coding.net:ehuo0123/git_learn.git (push)
-```
-
-这样设置后的push 和pull操作与最初的操作完全一致，不需要进行调整
-
-如果不再需要多个仓库，可以使用`git remote set-url --delete <name> <url>`，将其删除
-```
-$ git remote set-url --delete origin git@git.coding.net:ehuo0123/git_learn.git
-```
-
 ### git 分支管理
 
 几乎每一种版本控制系统都以某种形式支持分支。使用分支意味着可以从开发主线上分离开来，然后在不影响主线的同时继续工作。
@@ -871,27 +762,253 @@ $ git branch -v
 ```
 $ git branch -d iss53
 ```
-<!-- 现在先提交一次
+
+
+#### 分支变基
+
+
+### git 远程仓库与分支
+
+要参与任何一个 git 项目的协作，必须要了解该如何管理远程仓库。远程仓库是指托管在网络上的项目仓库，同他人协作开发某个项目时，需要管理这些远程仓库，以便推送或拉取数据，分享各自的工作进展。管理远程仓库的工作，包括添加远程库，移除远程库，管理远程库分支，定义是否跟踪这些分支等
+
+远程分支(remote branch)是对远程仓库中的分支的索引。它们是一些无法移动的本地分支；只有在 git 进行网络交互时才会更新。远程分支就像是书签，提醒着上次连接远程仓库时上面各分支的位置
+
+通常用(远程仓库名)/(分支名)这样的形式表示远程分支，比如 `origin/master` 分支
+
+
+#### 克隆远程仓库
+
+克隆仓库的命令格式为 `git clone [url]`。比如，要克隆代码仓库 git_learn，可以用下面的命令：
 
 ```
-$ git commit -a -m 'made a change'
+$ git clone git@github.com:littlematch0123/git_learn.git
+```
+这会在当前目录下创建一个名为 `git_learn` 的目录，其中包含一个.git的目录，用于保存下载下来的所有版本记录，然后从中取出最新版本的文件拷贝。如果进入这个新建的 `git_learn` 目录，会看到项目中的所有文件已经在里边了，准备好后续开发和使用。如果希望在克隆的时候，自己定义要新建的项目目录名称，可以在上面的命令末尾指定新的名字
+
+```
+$ git clone git@github.com:littlematch0123/git_learn.git learnGit
 ```
 
-然后，回到 master 分支
+如果最后一个字符是点，表示会在当前目录存放项目的所有文件，但当前目录一开始最好是个空目录
 
 ```
-$ git checkout master
+$ git clone git@github.com:littlematch0123/git_learn.git .
+```
+
+#### 查看远程仓库
+
+要查看当前配置有哪些远程仓库，可以用 `git remote` 命令，它会列出每个远程库的简短名字。在克隆完某个项目后，至少可以看到一个名为 `origin` 的远程库，git 默认使用这个名字来标识所克隆的原始仓库
+
+```
+$ git remote
+origin
+```
+也可以加上 -v 选项(v为--verbose的简写，中文意思是冗长的)，显示对应的克隆地址。如果没有推送权限，将看不到 push 的地址
+
+```
+$ git remote -v
+origin	git@github.com:littlematch0123/git_learn.git (fetch)
+origin	git@github.com:littlematch0123/git_learn.git (push)
+```
+
+#### 添加远程仓库
+
+通常情况下，一个本地 git 仓库对应一个远程仓库；然而，在一些情况下，一个本地仓库需要同时关联多个远程仓库，比如同时将一个项目发布在 github 和 coding上
+
+添加一个新的远程仓库，可以指定一个名字，以便将来引用，运行 `git remote add [shortname] [url]`
+```
+$ git remote add coding git@git.coding.net:ehuo0123/git_learn.git
+$ git remote -v
+coding	git@git.coding.net:ehuo0123/git_learn.git (fetch)
+coding	git@git.coding.net:ehuo0123/git_learn.git (push)
+origin	git@github.com:littlematch0123/git_learn.git (fetch)
+origin	git@github.com:littlematch0123/git_learn.git (push)
 ```
 
 
-在 master 分支上也提交一次
+
+#### 推送本地分支
+
+
+`git push` 命令用于将本地分支的更新，推送到远程主机
+
 ```
-$ git commit -a -m 'made other changes'
+$ git push <远程主机名> <本地分支名>:<远程分支名>
 ```
 
-现在项目提交历史产生了分叉
+下面命令的意思是取出我在本地的 serverfix 分支，推送到远程仓库的 serverfix 分支中去
 
-![git_branch](https://pic.xiaohuochai.site/blog/git_branch9.png) -->
+```
+$ git push origin serverfix:serverfix
+```
+当然，分支名字可以不同，但不建议这样做
+```
+git push origin serverfix:awesomebranch
+```
+
+因为本地和远程分支的名字相同，有下面简要写法
+
+```
+$ git push origin serverfix
+```
+
+如果要把本地的 master 分支推送到 origin 服务器上，可以运行下面的命令
+
+```
+$ git push origin master
+```
+下面命令表示将当前分支推送到 origin 主机的对应分支，如果当前分支是 master 分支则推送 master 分支，如果是 x 分支则推送 x 分支
+
+```
+$ git push origin
+```
+
+一般地，当前分支只有一个追踪分支，那么主机名都可以省略
+
+```
+$ git push
+```
+
+如果当前分支与多个主机存在追踪关系，则可以使用 `-u` 选项指定一个默认主机，这样后面就可以不加任何参数使用 `git push`
+
+```
+$ git push -u origin master
+```
+
+不管是否存在对应的远程分支，将本地的所有分支都推送到远程主机，这时需要使用 `–all` 选项
+
+```
+$ git push --all origin
+```
+
+
+#### 从服务器抓取数据
+
+使用 `git fetch` 命令从服务器抓取所有分支的数据
+
+```
+$ git fetch origin
+remote: Enumerating objects: 4, done.
+remote: Counting objects: 100% (4/4), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 3 (delta 0), pack-reused 0
+Unpacking objects: 100% (3/3), done.
+From https://github.com/littlematch0123/git_learn
+ * [new branch]      y          -> origin/y
+```
+
+如果加上分支名，则只更新该分支的数据
+```
+$ git fetch origin master
+```
+
+但是要注意的是，`fetch` 命令只抓取数据，本地不会自动生成一份可编辑的副本（拷贝）。 换句话说，这种情况下，不会有一个新的 y 分支——只有一个不可以修改的 origin/y 指针
+
+可以运行 `git merge origin/y` 将这些工作合并到当前所在的 master 分支
+
+```
+$ git merge origin/y
+```
+ 如果想要在自己的 y 分支上工作，可以将其建立在远程跟踪分支之上：
+
+```
+$ git checkout -b y origin/y
+```
+
+从一个远程跟踪分支检出一个本地分支会自动创建所谓的“跟踪分支”（它跟踪的分支叫做“上游分支”）。 跟踪分支是与远程分支有直接关系的本地分支，本地分支与远程分支之间建立了一种追踪关系(tracking)
+
+当克隆一个仓库时，它通常会自动地创建一个跟踪 `origin/master` 的 master 分支
+
+如果在一个跟踪分支上输入 `git pull`，git 能自动地识别去哪个服务器上抓取、合并到哪个分支。所以，实际上，`git pull` 是 `git fetch` 后跟`git merge FETCH_HEAD` 的缩写。
+
+```
+$ git pull <远程主机名> <远程分支名>:<本地分支名>
+```
+比如，要取回 origin 主机的 next 分支，与本地的 master 分支合并，需要写成下面这样 
+
+```
+$ git pull origin next:master
+```
+
+如果远程分支(next)要与当前分支合并，如下
+
+```
+$ git pull origin next
+```
+
+如果当前分支与远程分支存在追踪关系，git pull就可以省略远程分支名
+
+```
+$ git pull origin
+```
+
+如果当前分支只有一个追踪分支，连远程主机名都可以省略
+
+```
+$ git pull
+```
+
+如果 `git pull` 时，提示 `no tracking information`，则说明本地分支和远程分支的追踪关系没有创建，用命令 `git branch --set-upstream branch-name origin/branch-name` 来建立追踪
+
+#### 删除远程分支
+
+如果省略本地分支名，则表示删除指定的远程分支，因为这等同于推送一个空的本地分支到远程分支
+
+下面命令表示删除 origin 主机的 x 分支
+
+
+```
+$ git push origin :x
+# 等同于
+$ git push origin --delete x
+```
+
+#### 远程仓库删除和重命名
+
+```
+$ git remote rename coding cd # 重命名
+```
+
+```
+$ git remote rm coding # 删除
+```
+
+#### 不区分远程仓库
+
+由于添加了多个远程仓库，在 push 和 pull 时便面临了仓库的选择问题。诚然如此较为严谨，但是在许多情况下，只需要保持远程仓库完全一致，而不需要进行区分，因而这样的区分便显得有些“多余”
+
+先查看当前的 `git remote` 情况
+
+```
+$ git remote -v
+origin	git@github.com:littlematch0123/git_learn.git (fetch)
+origin	git@github.com:littlematch0123/git_learn.git (push)
+```
+
+接下来，不额外添加远程仓库，而是给现有的远程仓库添加额外的URL
+
+使用 `git remote set-url --add <name> <url>`，给已有的远程仓库添加一个远程地址
+
+```
+$ git remote set-url --add origin git@git.coding.net:ehuo0123/git_learn.git
+```
+
+再次查看所关联的远程仓库：
+
+```
+$ git remote -v
+origin	git@github.com:littlematch0123/git_learn.git (fetch)
+origin	git@github.com:littlematch0123/git_learn.git (push)
+origin	git@git.coding.net:ehuo0123/git_learn.git (push)
+```
+
+这样设置后的push 和pull操作与最初的操作完全一致，不需要进行调整
+
+如果不再需要多个仓库，可以使用`git remote set-url --delete <name> <url>`，将其删除
+```
+$ git remote set-url --delete origin git@git.coding.net:ehuo0123/git_learn.git
+```
+
 
 
 ### git 标签管理
