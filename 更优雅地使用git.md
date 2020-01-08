@@ -1,52 +1,10 @@
-#### 别名配置
+本文将介绍 git 的进阶及相关设置，从而更优雅地使用 git
 
-使用 git 别名配置，可以让 git 体验更简单
 
-可以通过 `git config` 命令g来为命令设置一个别名
-```
-$ git config --global alias.ci commit
-```
-这意味着，当要输入 `git commit` 时，只需要输入 `git ci` 就好了
 
-更简单的方式，是直接编辑 `~/.gitconfig` 文件，可以达到相同的效果
-
-```
-[alias]
-c = commit
-```
-
-但如果只想输入 `gc`，就想实现 `git commit` 相同的效果，则需要使用 linux 的别名功能
-
-新建 `.bashrc` 文件，然后更改其内容
-```
-alias gc="git commit"
-```
-运行该文件即可
-```
-source ~/.bashrc
-```
-一个常见的别名配置如下
-
-```
-alias ga="git add"
-alias gc="git commit"
-alias gac="git add . && git commit -m"
-
-alias gs="git status"
-alias gsb="git status -sb"
-alias gd="git diff"
-alias gg="git log"
-alias glog="git log --graph --oneline --all"
-
-alias gp="git push"
-alias gl="git pull"
-
-alias gb="git branch"
-alias gco="git checkout"
-alias gm="git merge"
-```
 
 #### 分支变基
+
 
 把一个分支中的修改整合到另一个分支的办法有两种：merge 和 rebase(rebase的翻译为衍合或变基)
 
